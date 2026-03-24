@@ -1,97 +1,110 @@
-// Register
+// REGISTER
 function register() {
-    let user = document.getElementById("regUser").value;
-    let pass = document.getElementById("regPass").value;
+  let u = regUser.value;
+  let p = regPass.value;
 
-    localStorage.setItem(user, pass);
-    alert("Registered successfully");
+  if (!u || !p) return alert("Fill all fields");
+
+  localStorage.setItem(u, p);
+  alert("Account created");
+  window.location.href = "login.html";
 }
 
-// Login
+// LOGIN
 function login() {
-    let user = document.getElementById("loginUser").value;
-    let pass = document.getElementById("loginPass").value;
+  let u = loginUser.value;
+  let p = loginPass.value;
 
-    if (localStorage.getItem(user) === pass) {
-        localStorage.setItem("currentUser", user);
-        window.location.href = "dashboard.html";
-    } else {
-        alert("Invalid login");
-    }
+  if (localStorage.getItem(u) === p) {
+    localStorage.setItem("currentUser", u);
+    window.location.href = "dashboard.html";
+  } else {
+    alert("Wrong credentials");
+  }
 }
 
-// Add Note
+// LOGOUT
+function logout() {
+  localStorage.removeItem("currentUser");
+  window.location.href = "index.html";
+}
+
+// ADD NOTE
 function addNote() {
-    let note = document.getElementById("noteInput").value;
-    let user = localStorage.getItem("currentUser");
+  let user = localStorage.getItem("currentUser");
+  let notes = JSON.parse(localStorage.getItem(user+"_notes")) || [];
 
-    let notes = JSON.parse(localStorage.getItem(user + "_notes")) || [];
-    notes.push(note);
+  notes.push(noteInput.value);
+  localStorage.setItem(user+"_notes", JSON.stringify(notes));
+  noteInput.value = "";
 
-    localStorage.setItem(user + "_notes", JSON.stringify(notes));
-    displayNotes();
+  displayNotes();
 }
 
-// Display Notes
+// DISPLAY
 function displayNotes() {
-    let user = localStorage.getItem("currentUser");
-    let notes = JSON.parse(localStorage.getItem(user + "_notes")) || [];
+  let user = localStorage.getItem("currentUser");
+  let notes = JSON.parse(localStorage.getItem(user+"_notes")) || [];
 
-    let container = document.getElementById("notesContainer");
-    container.innerHTML = "";
+  notesContainer.innerHTML = "";
 
-    notes.forEach((n, index) => {
-        container.innerHTML += `
-            <div class="note">
-                ${n}
-                <br>
-                <button onclick="deleteNote(${index})">Delete</button>
-                <button onclick="editNote(${index})">Edit</button>
-                <button onclick="shareNote('${n}')">Share</button>
-            </div>
-        `;
-    });
+  notes.forEach((n, i) => {
+    notesContainer.innerHTML += `
+      <div class="note">
+        ${n}
+        <br>
+        <button onclick="editNote(${i})">Edit</button>
+        <button onclick="deleteNote(${i})">Delete</button>
+        <button onclick="shareNote('${n}')">Share</button>
+      </div>
+    `;
+  });
 }
 
-// Delete
+// DELETE
 function deleteNote(i) {
-    let user = localStorage.getItem("currentUser");
-    let notes = JSON.parse(localStorage.getItem(user + "_notes"));
+  let user = localStorage.getItem("currentUser");
+  let notes = JSON.parse(localStorage.getItem(user+"_notes"));
 
-    notes.splice(i, 1);
-    localStorage.setItem(user + "_notes", JSON.stringify(notes));
-    displayNotes();
+  notes.splice(i,1);
+  localStorage.setItem(user+"_notes", JSON.stringify(notes));
+  displayNotes();
 }
 
-// Edit
+// EDIT
 function editNote(i) {
-    let user = localStorage.getItem("currentUser");
-    let notes = JSON.parse(localStorage.getItem(user + "_notes"));
+  let user = localStorage.getItem("currentUser");
+  let notes = JSON.parse(localStorage.getItem(user+"_notes"));
 
-    let newNote = prompt("Edit note:", notes[i]);
-    notes[i] = newNote;
+  let updated = prompt("Edit:", notes[i]);
+  notes[i] = updated;
 
-    localStorage.setItem(user + "_notes", JSON.stringify(notes));
-    displayNotes();
+  localStorage.setItem(user+"_notes", JSON.stringify(notes));
+  displayNotes();
 }
 
-// Search
+// SEARCH
 function searchNotes() {
-    let input = document.getElementById("search").value.toLowerCase();
-    let notes = document.querySelectorAll(".note");
-
-    notes.forEach(n => {
-        n.style.display = n.innerText.toLowerCase().includes(input) ? "block" : "none";
-    });
+  let val = search.value.toLowerCase();
+  document.querySelectorAll(".note").forEach(n=>{
+    n.style.display = n.innerText.toLowerCase().includes(val) ? "block":"none";
+  });
 }
 
-// Share (simulate)
-function shareNote(note) {
-    navigator.clipboard.writeText(note);
-    alert("Note copied to clipboard!");
+// SHARE
+function shareNote(n) {
+  navigator.clipboard.writeText(n);
+  alert("Copied!");
 }
 
-// Load notes on dashboard
+// CLEAR ALL
+function clearAll() {
+  let user = localStorage.getItem("currentUser");
+  localStorage.removeItem(user+"_notes");
+  displayNotes();
+}
+
+// AUTO LOAD
 if (window.location.pathname.includes("dashboard.html")) {
-    displayNotes();
+  displayNotes();
 }
